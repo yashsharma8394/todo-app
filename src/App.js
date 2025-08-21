@@ -1,25 +1,99 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
 
-function App() {
+export default function TodoApp() {
+  const [tasks, setTasks] = useState(() => {
+    // Load saved tasks from localStorage when app starts
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [input, setInput] = useState("");
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const addTask = () => {
+    if (input.trim() === "") return;
+    setTasks([...tasks, { id: Date.now(), text: input, completed: false }]);
+    setInput("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
+
+  const clearAll = () => {
+    if (window.confirm("Are you sure you want to delete all tasks?")) {
+      setTasks([]);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6">
+        <h1 className="text-2xl font-bold text-center mb-4">✅ To-Do List</h1>
+
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
+            placeholder="Add a new task..."
+            className="flex-grow px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            onClick={addTask}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow"
+          >
+            Add
+          </button>
+        </div>
+
+        <ul className="space-y-2 mb-4">
+          {tasks.map((task) => (
+            <li
+              key={task.id}
+              className="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm"
+            >
+              <span
+                onClick={() => toggleTask(task.id)}
+                className={`cursor-pointer flex-grow text-left ${
+                  task.completed
+                    ? "line-through text-gray-400"
+                    : "text-gray-800"
+                }`}
+              >
+                {task.text}
+              </span>
+              <button
+                onClick={() => deleteTask(task.id)}
+                className="ml-2 text-red-500 hover:text-red-700"
+              >
+                ✖
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {tasks.length > 0 && (
+          <button
+            onClick={clearAll}
+            className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow"
+          >
+            Clear All
+          </button>
+        )}
+      </div>
     </div>
   );
 }
-
-export default App;
