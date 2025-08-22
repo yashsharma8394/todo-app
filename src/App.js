@@ -1,99 +1,86 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-export default function TodoApp() {
-  const [tasks, setTasks] = useState(() => {
-    // Load saved tasks from localStorage when app starts
-    const saved = localStorage.getItem("tasks");
-    return saved ? JSON.parse(saved) : [];
-  });
+function App() {
+  const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
-
-  // Save tasks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
 
   const addTask = () => {
     if (input.trim() === "") return;
-    setTasks([...tasks, { id: Date.now(), text: input, completed: false }]);
+    setTasks([...tasks, { text: input, completed: false }]);
     setInput("");
   };
 
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleTask = (index) => {
+    const newTasks = [...tasks];
+    newTasks[index].completed = !newTasks[index].completed;
+    setTasks(newTasks);
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-
-  const clearAll = () => {
-    if (window.confirm("Are you sure you want to delete all tasks?")) {
-      setTasks([]);
-    }
+  const deleteTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6">
-        <h1 className="text-2xl font-bold text-center mb-4">✅ To-Do List</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 p-4">
+      <div className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl w-full max-w-md transition-all">
+        {/* Heading */}
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-6 tracking-wide drop-shadow-md">
+          ✨ My Todo List
+        </h1>
 
-        <div className="flex gap-2 mb-4">
+        {/* Input & Add Button */}
+        <div className="flex mb-6 shadow-sm">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addTask()}
-            placeholder="Add a new task..."
-            className="flex-grow px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="What’s on your mind?"
+            className="flex-1 border border-gray-300 rounded-l-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all"
           />
           <button
             onClick={addTask}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-r-xl hover:from-purple-600 hover:to-pink-600 font-semibold transition-all"
           >
             Add
           </button>
         </div>
 
-        <ul className="space-y-2 mb-4">
-          {tasks.map((task) => (
+        {/* Tasks List */}
+        <ul className="space-y-3">
+          {tasks.map((task, index) => (
             <li
-              key={task.id}
-              className="flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm"
+              key={index}
+              className="flex items-center justify-between bg-white p-3 rounded-xl shadow hover:shadow-md transition-all"
             >
-              <span
-                onClick={() => toggleTask(task.id)}
-                className={`cursor-pointer flex-grow text-left ${
-                  task.completed
-                    ? "line-through text-gray-400"
-                    : "text-gray-800"
-                }`}
-              >
-                {task.text}
-              </span>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={task.completed}
+                  onChange={() => toggleTask(index)}
+                  className="mr-3 w-5 h-5 accent-purple-500 cursor-pointer"
+                />
+                <span
+                  className={`text-lg ${
+                    task.completed
+                      ? "line-through text-gray-400 italic"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {task.text}
+                </span>
+              </div>
               <button
-                onClick={() => deleteTask(task.id)}
-                className="ml-2 text-red-500 hover:text-red-700"
+                onClick={() => deleteTask(index)}
+                className="text-red-400 hover:text-red-600 text-lg font-bold transition-all"
               >
                 ✖
               </button>
             </li>
           ))}
         </ul>
-
-        {tasks.length > 0 && (
-          <button
-            onClick={clearAll}
-            className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow"
-          >
-            Clear All
-          </button>
-        )}
       </div>
     </div>
   );
 }
+
+export default App;
